@@ -3,6 +3,8 @@
 This is a university project for the course "Computer Vision".
 This project consists in a classifier of car model.
 
+**michhar fork**:  Added some **Updates**, below, that helped me create good models with smaller datasets (final at ~1000 images per class).
+
 ## Requirements
 - Python3
 - numpy
@@ -40,6 +42,7 @@ So download the dataset, select some models and put the directory model in the d
 If you need more data for your project you can also add the followings dataset:
 - [Stanford Cars Dataset from jkrause](https://ai.stanford.edu/~jkrause/cars/car_dataset.html) (low images quantity)
 - [Comprehensive Cars Database](http://mmlab.ie.cuhk.edu.hk/datasets/comp_cars/), here the module to get this dataset [MODULE](http://mmlab.ie.cuhk.edu.hk/datasets/comp_cars/agreement.pdf)
+- [Stanford Cars Dataset by class folder on Kaggle](https://www.kaggle.com/jutrera/stanford-car-dataset-by-classes-folder/data)
 
 ### Handle CSV training, testing, validation and dataset structure
 
@@ -91,6 +94,19 @@ Anyway, this paragraph is only for your info, the CSV files are automatically ge
 
 
 ### Preprocess the dataset
+
+---
+
+**Update**:  `collate_image.py` is a script to take all years of a make/model and collate the images into one make/model folder (basically removing the year separation).  It operates on the VMMRdb dataset, http://vmmrdb.cecsresearch.org/, that is suggested for use with this project.
+
+**Update**:  Padding images can help the CNN converge faster by allowing more evenly spread-out convolutions.  The main code of this repo for training does _not_ pad the images before training.  To pad an entire dataset and create a new folder with those padded images run the `padding.py` script. (see `padding.py --help`)
+
+**Update**:  Augmenting (doubling or even tripling) a dataset is very beneficial especially when concerned about overfitting a large network architecture.  A dataset can be augmented with added images (taking advantage of the `imgaug` library) by performing transformations like flipping left/right, affine transformations, center cropping, lightening, adusting contrast, hue and saturation, etc.  To perform some useful augmentations, use `augment.py` (see `augment.py --help`).
+
+**Update**:  Transfer learning can allow information from a pre-trained network to contribute information (e.g. what are edges, corners, gross shapes) to a training regimen.  A transfer learning approach, similar in usage to the "from scratch" training of `main.py`, can be taken by using `main_transfer.py`.
+
+---
+
 You have to generate the CSV files and calculate the mean and standard deviation to apply a normalization, just use the -p parameter to process your dataset so type:
 
 ```

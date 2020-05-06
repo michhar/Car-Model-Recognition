@@ -1,4 +1,8 @@
 dataset/*
+dataset_dir*
+results*
+test*
+*.zip
 dataset/.gitkeep 
 mean_devstd.txt
 train_file.csv

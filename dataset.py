@@ -10,6 +10,10 @@ from PIL import Image
 from os import path
 from glob import glob
 import random
+import copy
+import shutil
+
+from sklearn.model_selection import train_test_split
 
 from config import *
 
@@ -21,8 +25,11 @@ i = 0
 for d in dirs:
     d = d.replace(IMAGES_PATH, "")
     d = d.replace("/", "")
-    if " " in d:
-        d = d.replace(" ", "_")
+    if "," in d or "#" in d or "&" in d:
+        d = d.replace(",", "")
+        d = d.replace("&", "_")
+        d = d.replace("#", "")
+        # d = d.replace(" ", "_")
     num_classes[d] = i
     i+=1
 
@@ -51,14 +58,16 @@ def get_class(idx):
             return key
 
 def preprocessing():
+
     train_csv = ""
     test_csv  = ""
     train_csv_supp = []
     test_csv_supp = []
     class_files_training = []
     class_files_testing  = []
-
-    for key in num_classes:
+    
+    keys = copy.deepcopy(list(num_classes.keys()))
+    for key in keys:
         if " " in key:
             os.rename(IMAGES_PATH+"/"+key, IMAGES_PATH+"/"+key.replace(" ", "_"))
             key = key.replace(" ", "_")
@@ -67,23 +76,38 @@ def preprocessing():
         class_files = [w.replace(IMAGES_PATH+"/"+str(key)+"/", "") for w in class_files]
         class_files.sort()
 
-        class_files_training = class_files[: int(len(class_files)*.66)] # get 66% class images fo training
-        class_files_testing = class_files[int(len(class_files)*.66)+1 :] # get 33% class images fo testing
+        class_files_training, class_files_testing = train_test_split(class_files, shuffle=True, test_size=0.2)
 
         for f in class_files_training:
-            if "," in f or "#" in f or " " in f:
+            if "," in f or "#" in f or " " in f or "&" in f or "." in f[:-4] or len(f) > 50:
                 tmp_f = f.replace(",", "")
+                tmp_f = f.replace("&", "_")
                 tmp_f = tmp_f.replace("#", "")
                 tmp_f = tmp_f.replace(" ", "_")
+                # if period before ".jpg"
+                tmp_f2 = tmp_f[:-4]
+                tmp_f2 = tmp_f2.replace(".", "")
+                tmp_f = tmp_f2 + tmp_f[-4:]
+                # if len too long
+                if len(tmp_f) > 50:
+                    tmp_f = tmp_f[:50] +".jpg"
                 os.rename(IMAGES_PATH+"/"+key+"/"+f, IMAGES_PATH+"/"+key+"/"+tmp_f)
                 f = tmp_f
             train_csv_supp.append(f + ","+str(key))
 
         for f in class_files_testing:
-            if "," in f or "#" in f or " " in f:
+            if "," in f or "#" in f or " " in f or "&" in f or "." in f[:-4] or len(f) > 50:
                 tmp_f = f.replace(",", "")
+                tmp_f = f.replace("&", "_")
                 tmp_f = tmp_f.replace("#", "")
                 tmp_f = tmp_f.replace(" ", "_")
+                # if period before ".jpg"
+                tmp_f2 = tmp_f[:-4]
+                tmp_f2 = tmp_f2.replace(".", "")
+                tmp_f = tmp_f2 + tmp_f[-4:]
+                # if len too long
+                if len(tmp_f) > 50:
+                    tmp_f = tmp_f[:50] +".jpg"
                 os.rename(IMAGES_PATH+"/"+key+"/"+f, IMAGES_PATH+"/"+key+"/"+tmp_f)
                 f = tmp_f
             test_csv_supp.append(f + ","+str(key))

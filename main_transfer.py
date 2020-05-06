@@ -1,3 +1,8 @@
+"""
+Similar to "main.py" except uses transfer learning on the
+torchvision resnet model
+"""
+
 from dataset import torch, os, LocalDataset, transforms, np, get_class, num_classes, preprocessing, Image, m, s
 from config import *
 
@@ -39,9 +44,9 @@ if not os.path.exists(RESULTS_PATH):
 mean=m
 std_dev=s
 
-transform_train = transforms.Compose([transforms.Resize((224,224)),
-                                    transforms.RandomApply([transforms.ColorJitter(0.1,0.1,0.1,0.1),
-                                                            transforms.CenterCropt(200)], p=0.5),
+transform_train = transforms.Compose([transforms.RandomApply([transforms.ColorJitter(0.1,0.1,0.1,0.1)],
+                                                                  p=0.5),
+                                    transforms.Resize((224,224)),
                                     transforms.ToTensor(),
                                     transforms.Normalize(mean, std_dev)])
 
@@ -229,7 +234,24 @@ def train_model_iter(model_name, model, weight_decay=0):
 
 classes = {"num_classes": len(num_classes)}
 
-resnet152_model = resnet.resnet152(pretrained=False, **classes)
+# Transfer learning - reshape the last layer for number of classes
+resnet152_model = resnet.resnet152(pretrained=True)
+num_ftrs = resnet152_model.fc.in_features
+resnet152_model.fc = nn.Linear(num_ftrs, len(num_classes))
+
+print(len(list(resnet152_model.named_children())))
+
+# Open up the last layers of the network for training weights
+ct = 0
+for name, child in resnet152_model.named_children():
+    ct += 1
+    if ct < 6:
+        for name2, params in child.named_parameters():
+            params.requires_grad = False
+    else:
+        for name2, params in child.named_parameters():
+            params.requires_grad = True
+
 train_model_iter("resnet152", resnet152_model)
 
 model_name="resnet152"
@@ -240,7 +262,7 @@ if args.inp:
 
     image_path = args.inp
     im = Image.open(image_path).convert("RGB")
-    im = transform(im)
+    im = transform_test(im)
 
     print (str(RESULTS_PATH) + "/" + str(model_name) + "/" + str(model_name) + ".pt")
 

@@ -1,9 +1,6 @@
-numpy
-pytorch
-torchvision
-scikit-learn
-matplotlib
-pillow
-sklearn
-torchvision
-torch
+torch==1.5.0
+torchvision==0.6.0
+scikit-learn==0.22.2.post1
+matplotlib==3.2.1
+pillow<7.0.0
+
